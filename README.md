@@ -1,12 +1,28 @@
+
 ---
 
-# flutter_notes_supabase
+# noteit_flutter_supabase
 
 A simple Flutter application that allows users to take notes, backed by Supabase as the backend. Users can add, update, and delete notes, with a smooth, animated UI and integration with Supabase for data management.
 
 ---
 
-## Features
+## 📖 Table of Contents
+
+1. [Features](#features)
+2. [Screenshots](#screenshots)
+3. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Installing](#installing)
+4. [CRUD Operations](#crud-operations)
+5. [Download Build](#download-build)
+6. [Tech Stack](#tech-stack)
+7. [Contributing](#contributing)
+8. [License](#license)
+
+---
+
+## 🌟 Features
 
 - **Real-time Note Updates**: Syncs notes with Supabase in real-time.
 - **Note Management**: Add, edit, or delete notes seamlessly.
@@ -15,7 +31,7 @@ A simple Flutter application that allows users to take notes, backed by Supabase
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
 Here are some screenshots showcasing the app:
 
@@ -27,7 +43,7 @@ Here are some screenshots showcasing the app:
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 To get a local copy up and running, follow these simple steps.
 
@@ -72,7 +88,7 @@ To get a local copy up and running, follow these simple steps.
 
 ---
 
-## CRUD Operations
+## 🛠️ CRUD Operations
 
 This app implements full **CRUD** (Create, Read, Update, Delete) functionality using Supabase as the backend.
 
@@ -122,7 +138,7 @@ These operations are connected to a real-time stream, so any changes are immedia
 
 ---
 
-## Download Build
+## 📥 Download Build
 
 You can download the latest build of the app from the link below:
 
@@ -130,7 +146,7 @@ You can download the latest build of the app from the link below:
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Flutter**: Used for building cross-platform apps.
 - **Supabase**: Provides the backend for storing and managing notes.
@@ -138,13 +154,13 @@ You can download the latest build of the app from the link below:
   
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Feel free to fork this project, create a branch, and submit a pull request for any improvements or new features.
 
 ---
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
