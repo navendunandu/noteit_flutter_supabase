@@ -1,5 +1,3 @@
-Here's a sample **README** file for your project `flutter_notes_supabase`, designed to include project description, screenshot section, and a link for users to download the build. You can modify the download URL as needed after hosting your APK or build file.
-
 ---
 
 # flutter_notes_supabase
@@ -21,10 +19,10 @@ A simple Flutter application that allows users to take notes, backed by Supabase
 
 Here are some screenshots showcasing the app:
 
-![Screenshot 1](Screenshot1.png)
+![Screenshot 1](Screenshot1.png)  
 *Add a note screen*
 
-![Screenshot 2](Screenshot2.png)
+![Screenshot 2](Screenshot2.png)  
 *Main screen with notes list*
 
 ---
@@ -43,7 +41,7 @@ To get a local copy up and running, follow these simple steps.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/navendunandu/noteit_flutter_supabase.git
+   git clone https://github.com/navendunandu/flutter_notes_supabase.git
    ```
 
 2. Navigate to the project folder:
@@ -71,6 +69,56 @@ To get a local copy up and running, follow these simple steps.
    ```bash
    flutter run
    ```
+
+---
+
+## CRUD Operations
+
+This app implements full **CRUD** (Create, Read, Update, Delete) functionality using Supabase as the backend.
+
+1. **Create (Insert Note)**:
+   - Users can add a new note by typing into the text field and submitting. The note is saved to the Supabase database using the `insertNote` method.
+
+   ```dart
+   Future<void> insertNote(String note) async {
+     await Supabase.instance.client
+         .from('notes')
+         .insert({'body': note});
+   }
+   ```
+
+2. **Read (Fetch Notes)**:
+   - The app displays a list of notes fetched in real-time using a stream from Supabase.
+
+   ```dart
+   final _notesStream = Supabase.instance.client.from('notes').stream();
+   ```
+
+3. **Update (Edit Note)**:
+   - Users can edit an existing note by selecting the edit icon. The `updateNote` method is used to update the note content in the database.
+
+   ```dart
+   Future<void> updateNote(int id, String note) async {
+     await Supabase.instance.client
+         .from('notes')
+         .update({'body': note})
+         .eq('id', id);
+   }
+   ```
+
+4. **Delete (Remove Note)**:
+   - Users can delete a note by selecting the delete icon. The `deleteNote` method removes the note from the database.
+
+   ```dart
+   Future<void> deleteNote(int id) async {
+     await Supabase.instance.client
+         .from('notes')
+         .delete()
+         .eq('id', id);
+   }
+   ```
+
+These operations are connected to a real-time stream, so any changes are immediately reflected in the UI.
 
 ---
 
