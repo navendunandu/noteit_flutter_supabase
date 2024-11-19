@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_supabase/main.dart';
+import 'package:flutter_notes_supabase/screens/profile_screen.dart';
 import 'dart:math';
 
-class MyAppBar extends StatelessWidget {
-  const MyAppBar({super.key});
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class MainAppBar extends StatelessWidget {
+  MainAppBar({super.key});
 
   // Method to get greeting based on the time of day
   String _getGreeting() {
@@ -17,6 +21,8 @@ class MyAppBar extends StatelessWidget {
       return "Good Evening!";
     }
   }
+
+  final Session? session = supabase.auth.currentSession;
 
   // Method to get a random motivational quote
   String _getRandomQuote() {
@@ -38,7 +44,7 @@ class MyAppBar extends StatelessWidget {
     // Get greeting and random quote
     final greeting = _getGreeting();
     final quote = _getRandomQuote();
-
+    String name = session?.user.userMetadata!['display_name'];
     return Container(
       // Padding for the app bar content
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
@@ -49,9 +55,10 @@ class MyAppBar extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 10.0),
+        padding: const EdgeInsets.only(top: 20.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Greeting and quote text display
             Expanded(
@@ -62,13 +69,22 @@ class MyAppBar extends StatelessWidget {
                   Text(
                     greeting,
                     style: const TextStyle(
-                      color: Colors.white, // White color for greeting
+                      color: Color.fromARGB(
+                          255, 224, 137, 6), // White color for greeting
                       fontSize: 22,
                       fontWeight: FontWeight.bold, // Bold for greeting
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold, // Bold for greeting
+                    ),
+                  ),
                   // Display random quote with ellipsis if it overflows
+                  const SizedBox(height: 5),
                   Text(
                     quote,
                     style: const TextStyle(
@@ -85,11 +101,21 @@ class MyAppBar extends StatelessWidget {
               ),
             ),
             // Icon for visual appeal
-            const Icon(
-              Icons.nights_stay, // Icon representing night-time or relaxation
-              color:
-                  Color.fromARGB(255, 224, 137, 6), // Matching the orange theme
-              size: 28, // Icon size
+            IconButton(
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                color: Color.fromARGB(
+                    255, 224, 137, 6), // Matching the orange theme
+                size: 28,
+              ), // Icon representing night-time or relaxation
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilePage(),
+                    ));
+              },
+              // Icon size
             ),
           ],
         ),

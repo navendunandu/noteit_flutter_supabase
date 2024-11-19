@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_notes_supabase/appbar.dart';
+import 'package:flutter_notes_supabase/components/main_appbar.dart';
+import 'package:flutter_notes_supabase/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -23,13 +24,33 @@ class _MainScreenState extends State<MainScreen> {
   // List to store all notes fetched from the database
   List<Map<String, dynamic>> notes = [];
 
+  final Session? session = supabase.auth.currentSession;
+
+  String uid = "";
+
+  Stream<List<Map<String, dynamic>>>? _notesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    uid = session!.user.id;
+
+    // Initialize the stream after obtaining the user ID
+    _notesStream =
+        supabase.from('notes').stream(primaryKey: ['id']).eq('user_id', uid);
+  }
+
   // Method to insert a new note into the database
   Future<void> insertNote(String note) async {
     try {
+      String uid = session!.user.id;
       // Inserting the note into Supabase
-      final response = await Supabase.instance.client
+      final response = await supabase
           .from('notes')
-          .insert({'body': note}) // The column in your database is 'body'
+          .insert({
+            'body': note,
+            'user_id': uid
+          }) // The column in your database is 'body'
           .select()
           .single(); // Get the newly inserted note back to update the UI
 
@@ -50,7 +71,7 @@ class _MainScreenState extends State<MainScreen> {
       deletedNote = {'id': id, 'body': noteBody};
 
       // Delete the note from the database
-      await Supabase.instance.client
+      await supabase
           .from('notes')
           .delete()
           .eq('id', id); // Use the note's id to delete it
@@ -101,17 +122,40 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  // Stream to listen to real-time changes in the 'notes' table
-  final _notesStream =
-      Supabase.instance.client.from('notes').stream(primaryKey: ['id']);
+  // Method to toggle task completion status
+  Future<void> toggleTaskStatus(int id, String currentStatus, int index) async {
+    try {
+      // Toggle the task status between 'complete' and 'incomplete'
+      final newStatus =
+          currentStatus == 'incomplete' ? 'complete' : 'incomplete';
+
+      // Update the note's status in the database
+      await supabase.from('notes').update({'status': newStatus}).eq('id', id);
+
+      // Update the notes list and animate the change
+      setState(() {
+        notes[index]['status'] = newStatus; // Update the status in the UI
+      });
+
+      // Show a SnackBar indicating the status change
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Task marked as $newStatus'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error toggling task status: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // AppBar with custom height
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: MyAppBar(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(140),
+        child: MainAppBar(),
       ),
       backgroundColor: Colors.black, // Set background color to black
       floatingActionButtonLocation:
@@ -156,85 +200,117 @@ class _MainScreenState extends State<MainScreen> {
             itemBuilder: (context, index, animation) {
               return FadeTransition(
                 opacity: animation,
-                child: Card(
-                  color: Colors.grey[900],
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                child: Dismissible(
+                  key: ValueKey(notes[index]['id']),
+                  direction: DismissDirection
+                      .horizontal, // Allow swipe in both directions
+                  background: Container(
+                      color: notes[index]['status'] == "complete"
+                          ? Colors.blue
+                          : Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      alignment: Alignment.centerLeft,
+                      child: notes[index]['status'] == "complete"
+                          ? const Text(
+                              "Incomplete",
+                              style: TextStyle(color: Colors.white),
+                            )
+                          : const Text(
+                              "Completed",
+                              style: TextStyle(color: Colors.white),
+                            )),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    alignment: Alignment.centerRight,
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
                   ),
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Display the note body text
-                        Text(
-                          notes[index]['body'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                  onDismissed: (direction) {
+                    if (direction == DismissDirection.startToEnd) {
+                      // Swipe from left to right: Mark task as completed
+                      toggleTaskStatus(
+                        notes[index]['id'],
+                        notes[index]['status'],
+                        index,
+                      );
+                    } else if (direction == DismissDirection.endToStart) {
+                      // Swipe from right to left: Delete note
+                      deleteNote(
+                        notes[index]['id'],
+                        notes[index]['body'],
+                        index,
+                      );
+                    }
+                  },
+                  child: Card(
+                    color: Colors.grey[900],
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Display the note body text
+                          Text(
+                            notes[index]['body'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Display the timestamp and action buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Timestamp display
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.access_time,
-                                  color: Colors.white54,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  DateFormat('yyyy-MM-dd HH:mm:ss')
-                                      .format(DateTime.now()),
-                                  style: const TextStyle(
+                          const SizedBox(height: 8),
+                          // Display the timestamp and action buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Timestamp display
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
                                     color: Colors.white54,
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic,
+                                    size: 16,
                                   ),
-                                ),
-                              ],
-                            ),
-                            // Action buttons (Edit and Delete)
-                            Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    deleteNote(notes[index]['id'],
-                                        notes[index]['body'], index);
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Color.fromARGB(255, 224, 137, 6),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    DateFormat('yyyy-MM-dd HH:mm:ss')
+                                        .format(DateTime.now()),
+                                    style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
+                                ],
+                              ),
+                              // Action buttons (Edit)
+                              IconButton(
+                                onPressed: () {
+                                  showNoteDialog(
+                                    context: context,
+                                    isEditing: true,
+                                    noteId: notes[index]['id'],
+                                    initialText: notes[index]['body'],
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Color.fromARGB(255, 224, 137, 6),
                                 ),
-                                IconButton(
-                                  onPressed: () {
-                                    showNoteDialog(
-                                      context: context,
-                                      isEditing: true,
-                                      noteId: notes[index]['id'],
-                                      initialText: notes[index]['body'],
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Color.fromARGB(255, 224, 137, 6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

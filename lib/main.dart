@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_notes_supabase/screen.dart'; // Importing the screen where your app's main UI is defined
+import 'package:flutter_notes_supabase/screens/login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Importing the Supabase Flutter package
 
 // Main entry point of the Flutter application
@@ -9,8 +9,9 @@ void main() async {
 
   // Initialize the Supabase instance with your project URL and anon key
   await Supabase.initialize(
-    url: 'SUPABASE_URL', // Replace with your Supabase project's URL
-    anonKey: 'SUPABASE_ANON_KEY', // Replace with your Supabase anonymous key
+    url: 'https://wtqzqtnofaxczcpohdfw.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXpxdG5vZmF4Y3pjcG9oZGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNTcwODcsImV4cCI6MjA0NjczMzA4N30.9q09jTP1QuyrDNmIxSoafAnFbaQ70rhQhBBda-c4zGY',
   );
 
   // Run the app after Supabase initialization is complete
@@ -31,6 +32,6 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
         debugShowCheckedModeBanner: false, // Disables the debug banner
         home:
-            MainScreen()); // Main screen of the app, where the notes will be shown
+            LoginScreen()); // Main screen of the app, where the notes will be shown
   }
 }
